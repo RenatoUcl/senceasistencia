@@ -1,0 +1,44 @@
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Archivos de IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos de backup
+*.bak
+*.backup
+*.old
+*.orig
+
+# Archivos temporales
+*.tmp
+*.temp
+*.log
+
+# Configuraciones locales
+config_local.php
+local_config.php
+
+# Archivos de credenciales
+.env
+.env.local
+secrets.php
+
+# Archivos de prueba
+test_*.php
+*_test.php
+debug_*.php
+
+# Carpetas de dependencias
+node_modules/
+vendor/
+
+# Archivos de compilación
+*.min.js.map
+*.min.css.map

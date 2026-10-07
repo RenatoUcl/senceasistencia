@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/senceasistencia/db" VERSION="20260927" COMMENT="Registro de asistencia SENCE">
+  <TABLES>
+    <TABLE NAME="local_sence_asistencia" COMMENT="Registros de inicio y cierre de sesión SENCE">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="sence_codsence" TYPE="char" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="sence_idsession" TYPE="char" LENGTH="149" NOTNULL="false"/>
+        <FIELD NAME="sence_idsessionalumno" TYPE="char" LENGTH="149" NOTNULL="false"/>
+        <FIELD NAME="runalumno" TYPE="char" LENGTH="12" NOTNULL="false"/>
+        <FIELD NAME="accion" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="inicio"/>
+        <FIELD NAME="glosaerror" TYPE="int" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="ambiente" TYPE="char" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="fechahora" TYPE="char" LENGTH="19" NOTNULL="false"/>
+        <FIELD NAME="zonahoraria" TYPE="char" LENGTH="100" NOTNULL="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="duracion" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="courseid-userid" UNIQUE="false" FIELDS="courseid, userid"/>
+        <INDEX NAME="sence_idsession" UNIQUE="false" FIELDS="sence_idsession"/>
+      </INDEXES>
+    </TABLE>
+
+    <TABLE NAME="local_sence_tokens" COMMENT="Tokens de un solo uso para retorno desde SENCE">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="token" TYPE="char" LENGTH="64" NOTNULL="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="idsesionalumno" TYPE="char" LENGTH="149" NOTNULL="false"/>
+        <FIELD NAME="accion" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="inicio"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="timeexpires" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="token" UNIQUE="true" FIELDS="token"/>
+        <INDEX NAME="userid-courseid" UNIQUE="false" FIELDS="userid, courseid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
