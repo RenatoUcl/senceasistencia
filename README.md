@@ -183,7 +183,7 @@ https://github.com/RenatoUCL/moodle-local_senceasistencia/issues
 
 # Recursos oficiales de SENCE
 
-Manual Técnico v1.1.6           https://sence.gob.cl/sites/default/files/integracion_registro_asistencia_sence_v1.1.6.pdf
-Portal de tokens SENCE          https://sistemas.sence.cl/rts
-Clave Única                     https://claveunica.gob.cl/
-Contacto técnico E-Learning     Control e-learning <controlelearning@sence.cl>
+* Manual Técnico v1.1.6           https://sence.gob.cl/sites/default/files/integracion_registro_asistencia_sence_v1.1.6.pdf
+* Portal de tokens SENCE          https://sistemas.sence.cl/rts
+* Clave Única                     https://claveunica.gob.cl/
+* Contacto técnico E-Learning     Control e-learning <controlelearning@sence.cl>
