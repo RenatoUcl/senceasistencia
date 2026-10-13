@@ -35,7 +35,7 @@ Este plugin implementa la **integración por redirección** descrita en el Manua
 ### 1. Descargar el plugin
 
 cd /ruta/a/moodle/local/
-git clone https://github.com/TU_USUARIO/moodle-local_senceasistencia.git senceasistencia
+git clone https://github.com/RenatoUcl/senceasistencia.git senceasistencia
 
 o descargar el ZIP y descomprimirlo en /local/senceasistencia
 
