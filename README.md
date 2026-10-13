@@ -20,7 +20,7 @@ Este plugin implementa la **integración por redirección** descrita en el Manua
 
 ## Requisitos
 
-+-------------------+---------------------------------------+
+|-------------------|---------------------------------------|
 | Requisito         | Versión mínima                        |
 |-------------------|---------------------------------------|
 | Moodle            | 4.4 o superior                        |
@@ -28,7 +28,7 @@ Este plugin implementa la **integración por redirección** descrita en el Manua
 | MySQL / MariaDB   | 5.7 / 10.4 o superior                 |
 | Extensión cURL    | Habilitada                            |
 | HTTPS             | Obligatorio (SENCE no acepta HTTP)    |
-+-------------------+---------------------------------------+
+|-------------------|---------------------------------------|
 
 ## Instalación
 
@@ -77,18 +77,19 @@ Ir a "Administración del sitio" ->  "Extensiones" -> "Extensiones Locales" -> "
 ### 5. Preparación de los cursos
 
 Cada curso que use integración SENCE debe tener:
-Un campo personalizado llamado sence_codigo (o el que hayas configurado)
-El Código SENCE real del curso en ese campo
-Un nombre corto (shortname) que corresponda al CodigoCurso de SENCE 
-Nota: El CodigoCurso, viene generado tambien por sence, y este debe estar en las Ordenes de compra y/o en el detalle que genera la OTIC/SENCE con el listado de participantes. los participantes deben coincidir con el codigo del curso y codigo Sence
+* Un campo personalizado llamado sence_codigo (o el que hayas configurado)
+* El Código SENCE real del curso en ese campo
+* Un nombre corto (shortname) que corresponda al CodigoCurso de SENCE 
+
+** Nota: El CodigoCurso, viene generado tambien por sence, y este debe estar en las Ordenes de compra y/o en el detalle que genera la OTIC/SENCE con el listado de participantes. los participantes deben coincidir con el codigo del curso y codigo Sence
 
 #### 6. Preparar los usuarios
 
 Cada alumno debe tener:
 
-    Un campo personalizado llamado rut con el cuerpo del RUT (sin puntos ni guión)
-    Un campo personalizado llamado dv con el dígito verificador
-    Clave Única activa en https://claveunica.gob.cl/
+* Un campo personalizado llamado rut con el cuerpo del RUT (sin puntos ni guión)
+* Un campo personalizado llamado dv con el dígito verificador
+* Clave Única activa en https://claveunica.gob.cl/
 
 ### Uso
 
@@ -164,17 +165,17 @@ Ver CHANGELOG.md.
 ## Bugs conocidos
 
 #	Bug	Estado
-1	DV "0" no se envía correctamente	🔴 Pendiente fix v1.0.4
-2	Cierre con sence_idsession distinto al inicio	🟡 Pendiente fix v1.0.5
+* 1	DV "0" no se envía correctamente	🔴 Pendiente fix v1.0.4
+* 2	Cierre con sence_idsession distinto al inicio	🟡 Pendiente fix v1.0.5
 
 # Licencia
 GPL v3 - Ver LICENSE.
 
 # Autor
 
-Nombre: Renato Andrés Soto Moya
-Email: renato.soto@uchile.cl
-Institución: UNIVERSIDAD DE CHILE - FACULTAD DE CIENCIAS SOCIALES
+* Nombre: Renato Andrés Soto Moya
+* Email: renato.soto@uchile.cl
+* Institución: UNIVERSIDAD DE CHILE - FACULTAD DE CIENCIAS SOCIALES
 
 # Soporte
 
