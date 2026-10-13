@@ -70,3 +70,26 @@ $string['cronometro_alerta'] = '¡Quedan menos de 10 minutos de sesión!';
 $string['cronometro_cerrar_ahora'] = 'Cerrar sesión ahora';
 $string['cronometro_renovar'] = 'Renovar sesión';
 $string['cronometro_nota'] = 'Recuerde cerrar sesión antes de que termine el tiempo.';
+
+// Panel de administración
+$string['admin_cerrar_sesiones'] = 'Cerrar sesiones SENCE abiertas';
+$string['admin_cerrar_sesiones_desc'] = 'Busca y cierra las sesiones de SENCE que quedaron abiertas (inicios sin cierre posterior). Útil para limpiar la base de datos periódicamente.';
+$string['admin_horas_minimas'] = 'Horas mínimas abiertas';
+$string['admin_curso_opcional'] = 'Curso (opcional)';
+$string['admin_todos_cursos'] = 'Todos los cursos';
+$string['admin_buscar'] = 'Buscar sesiones';
+$string['admin_no_sesiones'] = 'No hay sesiones abiertas que cumplan los filtros.';
+$string['admin_sesiones_encontradas'] = 'Se encontraron {$a} sesiones abiertas.';
+$string['admin_col_usuario'] = 'Usuario';
+$string['admin_col_curso'] = 'Curso';
+$string['admin_col_run'] = 'RUN';
+$string['admin_col_ambiente'] = 'Ambiente';
+$string['admin_col_fecha_inicio'] = 'Fecha inicio';
+$string['admin_col_horas'] = 'Horas abiertas';
+$string['admin_col_session'] = 'Sesión SENCE';
+$string['admin_confirmar_desc'] = 'Se van a cerrar {$a} sesiones. Esta acción NO se puede deshacer.';
+$string['admin_confirmar_warning'] = 'IMPORTANTE: Se insertarán registros con acción "cierre_administrativo". Los registros originales de "inicio" NO se modifican (se preserva el histórico).';
+$string['admin_confirmar_btn'] = 'Confirmar cierre de {$a} sesiones';
+$string['admin_confirm_js'] = '¿Está seguro de cerrar {$a} sesiones? Esta acción no se puede deshacer.';
+$string['admin_resultado_cierre'] = 'Se cerraron {$a->cerradas} sesiones. Errores: {$a->errores}.';
+$string['admin_volver'] = 'Volver al panel';

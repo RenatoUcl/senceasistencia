@@ -70,3 +70,26 @@ $string['cronometro_alerta'] = 'Less than 10 minutes left in your session!';
 $string['cronometro_cerrar_ahora'] = 'Log out now';
 $string['cronometro_renovar'] = 'Renew session';
 $string['cronometro_nota'] = 'Remember to log out before time runs out.';
+
+// Admin panel
+$string['admin_cerrar_sesiones'] = 'Close open SENCE sessions';
+$string['admin_cerrar_sesiones_desc'] = 'Find and close SENCE sessions that were left open (logins without a subsequent close). Useful for periodically cleaning the database.';
+$string['admin_horas_minimas'] = 'Minimum hours open';
+$string['admin_curso_opcional'] = 'Course (optional)';
+$string['admin_todos_cursos'] = 'All courses';
+$string['admin_buscar'] = 'Search sessions';
+$string['admin_no_sesiones'] = 'No open sessions match the filters.';
+$string['admin_sesiones_encontradas'] = '{$a} open sessions found.';
+$string['admin_col_usuario'] = 'User';
+$string['admin_col_curso'] = 'Course';
+$string['admin_col_run'] = 'RUN';
+$string['admin_col_ambiente'] = 'Environment';
+$string['admin_col_fecha_inicio'] = 'Start date';
+$string['admin_col_horas'] = 'Hours open';
+$string['admin_col_session'] = 'SENCE session';
+$string['admin_confirmar_desc'] = '{$a} sessions will be closed. This action cannot be undone.';
+$string['admin_confirmar_warning'] = 'IMPORTANT: Records with action "cierre_administrativo" will be inserted. Original "inicio" records are NOT modified (history preserved).';
+$string['admin_confirmar_btn'] = 'Confirm closing {$a} sessions';
+$string['admin_confirm_js'] = 'Are you sure you want to close {$a} sessions? This action cannot be undone.';
+$string['admin_resultado_cierre'] = '{$a->cerradas} sessions closed. Errors: {$a->errores}.';
+$string['admin_volver'] = 'Back to panel';

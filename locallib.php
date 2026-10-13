@@ -1,5 +1,4 @@
 <?php
-// locallib.php - Funciones auxiliares del plugin
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -82,63 +81,10 @@ function local_senceasistencia_get_codigo_sence($courseid) {
  * Lee desde los campos personalizados configurados (por defecto: rut y dv).
  * Si no los encuentra, usa el idnumber del usuario.
  *
- * @param int $userid
- * @return string
- */
-/*
-function local_senceasistencia_get_run_alumno($userid) {
-    global $DB;
-
-    $campo_rut = get_config('local_senceasistencia', 'campo_rut');
-    $campo_dv  = get_config('local_senceasistencia', 'campo_dv');
-    if (empty($campo_rut)) { $campo_rut = 'rut'; }
-    if (empty($campo_dv))  { $campo_dv = 'dv'; }
-
-    try {
-        $field_rut = $DB->get_record('user_info_field', array('shortname' => $campo_rut), 'id', IGNORE_MISSING);
-        $field_dv  = $DB->get_record('user_info_field', array('shortname' => $campo_dv), 'id', IGNORE_MISSING);
-
-        if ($field_rut && $field_dv) {
-            $sql = "SELECT uid.data AS rut, udv.data AS dv
-                    FROM {user_info_data} uid
-                    JOIN {user_info_data} udv ON udv.userid = uid.userid
-                    WHERE uid.userid = :userid
-                      AND uid.fieldid = :fieldid_rut
-                      AND udv.fieldid = :fieldid_dv";
-            $result = $DB->get_record_sql($sql, array(
-                'userid'      => $userid,
-                'fieldid_rut' => $field_rut->id,
-                'fieldid_dv'  => $field_dv->id
-            ), IGNORE_MISSING);
-
-            if ($result && !empty($result->rut) && !empty($result->dv)) {
-                $rut = preg_replace('/[^0-9kK]/', '', $result->rut);
-                $dv  = preg_replace('/[^0-9kK]/', '', $result->dv);
-                return $rut . '-' . strtoupper($dv);
-            }
-        }
-
-        // Respaldo: idnumber del usuario
-        $idnumber = $DB->get_field('user', 'idnumber', array('id' => $userid), IGNORE_MISSING);
-        if (!empty($idnumber)) {
-            return str_replace(array('.', ' '), '', $idnumber);
-        }
-    } catch (Exception $e) {
-        return '';
-    }
-
-    return '';
-}
-*/
-
-/**
- * Obtiene el RUN del alumno en formato SENCE (xxxxxxxx-x).
- * Lee desde los campos personalizados configurados (por defecto: rut y dv).
- * Si no los encuentra, usa el idnumber del usuario.
- *
  * IMPORTANTE: El DV "0" es un valor válido y debe procesarse correctamente.
  * No usar empty() porque empty("0") devuelve true en PHP.
- *
+ * Usar comparación estricta !== '' en su lugar.
+ * 
  * @param int $userid
  * @return string
  */
@@ -168,20 +114,21 @@ function local_senceasistencia_get_run_alumno($userid) {
             ), IGNORE_MISSING);
 
             if ($result) {
-                // ⚠️ CAMBIO CRÍTICO: usar comparación estricta con '' en lugar de empty()
+                // Usar comparación estricta !== '' en lugar de empty()
+                // porque empty("0") devuelve true y perderíamos el DV=0
                 $rut_raw = isset($result->rut) ? trim($result->rut) : '';
                 $dv_raw  = isset($result->dv)  ? trim($result->dv)  : '';
 
                 // Validar que AMBOS tengan datos (comparación estricta)
-                // "0" no debe considerarse vacío
                 if ($rut_raw !== '' && $dv_raw !== '') {
                     // Limpiar el RUT de puntos y espacios, pero mantener números y K
                     $rut = preg_replace('/[^0-9kK]/', '', $rut_raw);
                     // Limpiar el DV de espacios, pero mantener números y K
                     $dv  = preg_replace('/[^0-9kK]/', '', $dv_raw);
-                    
+
                     // Validación final: que el RUT tenga al menos 1 dígito
-                    if ($rut !== '') {
+                    // y el DV tenga exactamente 1 carácter
+                    if ($rut !== '' && $dv !== '' && strlen($dv) === 1) {
                         return $rut . '-' . strtoupper($dv);
                     }
                 }
@@ -190,16 +137,16 @@ function local_senceasistencia_get_run_alumno($userid) {
 
         // Respaldo: usar idnumber del usuario
         $idnumber = $DB->get_field('user', 'idnumber', array('id' => $userid), IGNORE_MISSING);
-        if (!empty($idnumber)) {
-            return str_replace(array('.', ' '), '', $idnumber);
+        if ($idnumber !== false && $idnumber !== null && trim($idnumber) !== '') {
+            return str_replace(array('.', ' '), '', trim($idnumber));
         }
     } catch (Exception $e) {
+        debugging('Error obteniendo RUN: ' . $e->getMessage(), DEBUG_DEVELOPER);
         return '';
     }
 
     return '';
 }
-
 
 /**
  * Verifica que el plugin esté completamente configurado.

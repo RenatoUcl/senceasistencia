@@ -155,4 +155,11 @@ if ($hassiteconfig) {
         '120',  // 2 horas por defecto
         PARAM_INT
     ));
+
+    // ==================== PANEL DE ADMINISTRACIÓN ====================
+    $ADMIN->add('localplugins', new admin_externalpage(
+        'local_senceasistencia_cerrar',
+        get_string('admin_cerrar_sesiones', 'local_senceasistencia'),
+        new moodle_url('/local/senceasistencia/admin_cerrar_sesiones.php')
+    ));
 }

@@ -14,15 +14,8 @@ $tokenrecord = local_senceasistencia_validar_token($token, $id);
 if ($tokenrecord) {
     // Token válido: autenticar al usuario en la MISMA petición
     $userid = $tokenrecord->userid;
-
-    // Cargar el usuario
     $user = $DB->get_record('user', array('id' => $userid), '*', MUST_EXIST);
-
-    // Autenticar al usuario (Moodle genera la cookie automáticamente)
     \core\session\manager::set_user($user);
-
-    // Eliminar el token (un solo uso)
-    local_senceasistencia_eliminar_token($token);
 }
 
 // Asegurar que el usuario esté autenticado
@@ -35,7 +28,6 @@ $PAGE->set_title(get_string('registro_exitoso', 'local_senceasistencia'));
 $PAGE->set_heading($course->fullname);
 
 // ==================== LECTURA DE PARÁMETROS DE SENCE ====================
-
 $codigosence = optional_param('CodSence', '', PARAM_TEXT);
 $idcurso     = optional_param('CodigoCurso', '', PARAM_TEXT);
 $runalumno   = optional_param('RunAlumno', '', PARAM_TEXT);
@@ -55,53 +47,102 @@ if (empty($idsesionalumno)) {
     $idsesionalumno = optional_param('IdSessionAlumno', '', PARAM_TEXT);
 }
 
+$ambiente = local_senceasistencia_get_ambiente();
+
 // ==================== DETECTAR INICIO O CIERRE ====================
+// La acción viene del token (más confiable que depender de SENCE)
 $accion = 'inicio';
-if (!empty($idsesionsence)) {
-    $existe = $DB->record_exists('local_sence_asistencia', array(
-        'courseid'        => $id,
-        'userid'          => $USER->id,
-        'sence_idsession' => $idsesionsence,
-        'accion'          => 'inicio'
-    ));
-    if ($existe) {
-        $accion = 'cierre';
+if ($tokenrecord && !empty($tokenrecord->accion)) {
+    $accion = $tokenrecord->accion;
+}
+
+// ==================== SI ES CIERRE: BUSCAR EL ÚLTIMO INICIO ABIERTO ====================
+// SENCE puede generar un sence_idsession NUEVO en cada operación,
+// así que NO podemos asociar por sence_idsession.
+// Buscamos el último inicio sin cierre posterior por userid+courseid+ambiente.
+$registro_inicio = null;
+
+if ($accion === 'cierre') {
+    $sql = "SELECT i.*
+            FROM {local_sence_asistencia} i
+            WHERE i.accion = 'inicio'
+              AND i.userid = :userid
+              AND i.courseid = :courseid
+              AND i.ambiente = :ambiente
+              AND NOT EXISTS (
+                  SELECT 1 
+                  FROM {local_sence_asistencia} c
+                  WHERE c.accion IN ('cierre', 'cierre_automatico', 'cierre_auto', 'cierre_administrativo')
+                    AND c.userid = i.userid
+                    AND c.courseid = i.courseid
+                    AND c.ambiente = i.ambiente
+                    AND c.timecreated > i.timecreated
+              )
+            ORDER BY i.timecreated DESC";
+
+    $registro_inicio = $DB->get_record_sql($sql, array(
+        'userid'   => $USER->id,
+        'courseid' => $id,
+        'ambiente' => $ambiente,
+    ), IGNORE_MULTIPLE);
+
+    // Si SENCE no devolvió IdSesionSence, recuperarlo del inicio abierto
+    if (empty($idsesionsence) && $registro_inicio && !empty($registro_inicio->sence_idsession)) {
+        $idsesionsence = $registro_inicio->sence_idsession;
+    }
+
+    // Si SENCE no devolvió IdSesionAlumno, recuperarlo del inicio abierto
+    if (empty($idsesionalumno) && $registro_inicio && !empty($registro_inicio->sence_idsessionalumno)) {
+        $idsesionalumno = $registro_inicio->sence_idsessionalumno;
     }
 }
 
-$ambiente = local_senceasistencia_get_ambiente();
+// Eliminar el token (un solo uso)
+if ($tokenrecord) {
+    local_senceasistencia_eliminar_token($token);
+}
 
 // ==================== GUARDAR EN BASE DE DATOS ====================
-// Solo guardar si efectivamente recibimos datos de SENCE
-$tiene_datos_sence = !empty($idsesionsence) || !empty($runalumno) || !empty($codigosence);
+$tiene_datos = !empty($codigosence) || !empty($runalumno) || !empty($idsesionsence);
 
-if ($tiene_datos_sence) {
-    $record = new stdClass();
-    $record->courseid              = $id;
-    $record->userid                = $USER->id;
-    $record->sence_codsence        = $codigosence;
-    $record->sence_idsession       = $idsesionsence;
-    $record->sence_idsessionalumno = $idsesionalumno;
-    $record->runalumno             = $runalumno;
-    $record->accion                = $accion;
-    $record->glosaerror            = null;
-    $record->ambiente              = $ambiente;
-    $record->fechahora             = $fechahora;
-    $record->zonahoraria           = $zonahoraria;
-    $record->timecreated           = time();
+if ($accion === 'inicio' && !$tiene_datos) {
+    echo $OUTPUT->header();
+    echo $OUTPUT->notification('No se recibieron datos de SENCE.', 'notifyproblem');
+    echo $OUTPUT->footer();
+    exit;
+}
 
-    // Guardar duración de la sesión (en segundos)
+$record = new stdClass();
+$record->courseid              = $id;
+$record->userid                = $USER->id;
+$record->sence_codsence        = $codigosence;
+$record->sence_idsession       = $idsesionsence;
+$record->sence_idsessionalumno = $idsesionalumno;
+$record->runalumno             = $runalumno;
+$record->accion                = $accion;
+$record->glosaerror            = null;
+$record->ambiente              = $ambiente;
+$record->fechahora             = $fechahora;
+$record->zonahoraria           = $zonahoraria;
+$record->timecreated           = time();
+
+// Guardar duración (solo para inicios)
+if ($accion === 'inicio') {
     $duracion_min = (int)get_config('local_senceasistencia', 'duracion_sesion');
-    if (empty($duracion_min)) { $duracion_min = 120; }
+    if (empty($duracion_min)) { $duracion_min = 240; }
     $record->duracion = $duracion_min * 60;
+} else {
+    $record->duracion = 0;
+}
 
-    try {
-        $DB->insert_record('local_sence_asistencia', $record);
-    } catch (Exception $e) {
-        debugging('Error guardando registro SENCE: ' . $e->getMessage(), DEBUG_DEVELOPER);
-    }
+try {
+    $DB->insert_record('local_sence_asistencia', $record);
+} catch (Exception $e) {
+    debugging('Error guardando registro SENCE: ' . $e->getMessage(), DEBUG_DEVELOPER);
+}
 
-    // Guardar en sesión
+// Guardar en sesión
+if (!empty($idsesionsence)) {
     $SESSION->sence_idsession = $idsesionsence;
 }
 

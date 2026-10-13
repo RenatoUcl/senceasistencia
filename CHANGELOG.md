@@ -5,6 +5,49 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 El formato sigue las recomendaciones de [Keep a Changelog](https://keepachangelog.com/es/1.0.0/)
 y el proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.4] - 2026-10-13
+
+### Agregado
+- **Panel de administración para cerrar sesiones abiertas**: nueva página en `Administración del sitio → Plugins → Plugins locales → Cerrar sesiones SENCE abiertas` que permite al administrador:
+  - Ver todas las sesiones abiertas (inicios sin cierre posterior)
+  - Filtrar por antigüedad mínima (evitar cerrar sesiones en curso)
+  - Filtrar por curso (opcional)
+  - Cerrar masivamente con un solo clic
+  - Registrar los cierres con la acción `cierre_administrativo` (diferenciado de `cierre_automatico`)
+- Nueva cadena de idioma `cierre_administrativo` para distinguir cierres realizados por el administrador.
+
+### Corregido
+
+#### DV "0" en el RUN del alumno
+- La función `local_senceasistencia_get_run_alumno()` descartaba el dígito verificador "0" por usar `empty()`. En PHP, `empty("0")` devuelve `true`, haciendo que el DV se perdiera.
+- Ahora usa comparación estricta `!== ''` que respeta el "0" como valor válido.
+- Se agregó validación de longitud del DV (debe tener exactamente 1 carácter).
+- Se agregó `trim()` para eliminar espacios accidentales en los campos `rut` y `dv`.
+- Se mejoró el manejo de excepciones con logging en modo debug.
+
+#### Cierre de sesión con `sence_idsession` distinto al inicio
+- SENCE puede generar un `sence_idsession` **nuevo** en cada operación. La lógica anterior buscaba el cierre por coincidencia exacta de `sence_idsession`, por lo que nunca encontraba el inicio correspondiente.
+- Ahora se busca el **último inicio sin cierre posterior** por combinación de `userid + courseid + ambiente + timecreated`.
+- En `retoma.php`, si SENCE no envía `IdSesionSence` en el cierre, se recupera del inicio abierto.
+- En `hook_callbacks.php`, la detección de sesión activa usa la misma lógica.
+
+### Notas
+- El DV "0" es un valor válido según el algoritmo del RUN chileno.
+- El core de Moodle no muestra el "0" en el perfil del usuario (bug del core), pero el plugin lo lee correctamente desde la base de datos.
+- Los cierres guardados como `error_301` previos a esta versión no se modifican (histórico preservado).
+- El panel de administración está disponible solo para usuarios con capability `moodle/site:config`.
+
+### Bugs conocidos
+- Ninguno pendiente por el momento.
+
+---
+
+### Corregido
+- Se corrige problema de DV en 0 para envio al SENCE
+- Se corrige bug de cierre de Sesion SENCE
+- Se corrige redacción de README.md
+
+
 ## [1.0.3] - 2026-10-05
 
 ### Agregado

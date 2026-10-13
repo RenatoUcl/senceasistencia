@@ -11,15 +11,12 @@ class hook_callbacks {
     /**
      * Hook que se ejecuta al inicio del <body>.
      * Inyecta el bloque SENCE en páginas de curso.
-     *
-     * @param \core\hook\output\before_standard_top_of_body_html_generation $hook
      */
     public static function before_standard_top_of_body(
         \core\hook\output\before_standard_top_of_body_html_generation $hook
     ): void {
         global $PAGE, $USER, $COURSE;
 
-        // Detectar el curso correcto usando $COURSE (más confiable que $PAGE->course)
         $courseid = 0;
         if (!empty($COURSE) && !empty($COURSE->id)) {
             $courseid = $COURSE->id;
@@ -27,41 +24,32 @@ class hook_callbacks {
             $courseid = $PAGE->course->id;
         }
 
-        // Solo en cursos reales (excluir portada del sitio)
         if (empty($courseid) || $courseid == 1) {
             return;
         }
 
-        // Verificar que el pagetype sea de curso (course-view-*)
         if (strpos($PAGE->pagetype, 'course-view') !== 0) {
             return;
         }
 
-        // No mostrar en modo edición
         if ($PAGE->user_is_editing()) {
             return;
         }
 
-        // No mostrar a invitados
         if (!isloggedin() || isguestuser()) {
             return;
         }
 
-        // Verificar que el plugin esté configurado
         if (!local_senceasistencia_config_ok()) {
             return;
         }
 
-        // Verificar que el curso tenga código SENCE
         $codigosence = local_senceasistencia_get_codigo_sence($courseid);
         if (empty($codigosence)) {
             return;
         }
 
-        // Obtener el objeto del curso
         $course = get_course($courseid);
-
-        // Construir HTML
         $html = self::construir_bloque_sence($course);
 
         if (!empty($html)) {
@@ -71,9 +59,6 @@ class hook_callbacks {
 
     /**
      * Construye el HTML del bloque SENCE.
-     *
-     * @param \stdClass $course
-     * @return string
      */
     public static function construir_bloque_sence($course): string {
         global $DB, $CFG, $USER;
@@ -101,46 +86,49 @@ class hook_callbacks {
         $ambiente    = \local_senceasistencia_get_ambiente();
         $lineacap    = \local_senceasistencia_get_linea_default();
 
-        // Duración de la sesión (en minutos)
         $duracion_min = (int)\get_config('local_senceasistencia', 'duracion_sesion');
         if (empty($duracion_min)) {
             $duracion_min = 240;
         }
         $duracion_seg = $duracion_min * 60;
 
-        // Generar IdSesionAlumno único (una sola "s" en "Sesion")
         $idsesionalumno = \local_senceasistencia_generar_idsesion_alumno($USER->id);
 
         // ==================== VERIFICAR SESIÓN ACTIVA ====================
-        $sesionactiva = $DB->get_record('local_sence_asistencia', array(
-            'courseid' => $courseid,
-            'userid'   => $USER->id,
-            'accion'   => 'inicio',
-            'ambiente' => $ambiente
-        ), '*', IGNORE_MULTIPLE);
+        // Buscar el ÚLTIMO inicio sin cierre posterior.
+        // NO usamos sence_idsession porque SENCE puede generar uno nuevo en cada operación.
+        $sql_sesion = "SELECT i.*
+                       FROM {local_sence_asistencia} i
+                       WHERE i.accion = 'inicio'
+                         AND i.userid = :userid
+                         AND i.courseid = :courseid
+                         AND i.ambiente = :ambiente
+                         AND NOT EXISTS (
+                             SELECT 1 
+                             FROM {local_sence_asistencia} c
+                             WHERE c.accion IN ('cierre', 'cierre_automatico', 'cierre_auto', 'cierre_administrativo')
+                               AND c.userid = i.userid
+                               AND c.courseid = i.courseid
+                               AND c.ambiente = i.ambiente
+                               AND c.timecreated > i.timecreated
+                         )
+                       ORDER BY i.timecreated DESC";
 
-        $tienecierre = false;
-        if ($sesionactiva) {
-            $tienecierre = $DB->record_exists('local_sence_asistencia', array(
-                'courseid'        => $courseid,
-                'userid'          => $USER->id,
-                'accion'          => 'cierre',
-                'sence_idsession' => $sesionactiva->sence_idsession,
-                'ambiente'        => $ambiente
-            ));
-        }
+        $sesionactiva = $DB->get_record_sql($sql_sesion, array(
+            'userid'   => $USER->id,
+            'courseid' => $courseid,
+            'ambiente' => $ambiente,
+        ), IGNORE_MULTIPLE);
 
         // ==================== GENERAR TOKENS DE RETORNO ====================
-        // Token para el formulario de INICIO
         $token_inicio = \local_senceasistencia_crear_token($USER->id, $courseid, $idsesionalumno, 'inicio');
         $urlretoma_inicio = $CFG->wwwroot . '/local/senceasistencia/retoma.php?id=' . $courseid . '&token=' . $token_inicio;
         $urlerror_inicio  = $CFG->wwwroot . '/local/senceasistencia/error.php?id=' . $courseid . '&token=' . $token_inicio;
 
-        // Token para el formulario de CIERRE (solo si hay sesión activa)
         $token_cierre = '';
         $urlretoma_cierre = '';
         $urlerror_cierre = '';
-        if ($sesionactiva && !$tienecierre) {
+        if ($sesionactiva) {
             $token_cierre = \local_senceasistencia_crear_token(
                 $USER->id,
                 $courseid,
@@ -151,35 +139,27 @@ class hook_callbacks {
             $urlerror_cierre  = $CFG->wwwroot . '/local/senceasistencia/error.php?id=' . $courseid . '&token=' . $token_cierre;
         }
 
-        // ==================== COLORES SEGÚN AMBIENTE ====================
+        // ==================== COLORES ====================
         $color_principal = ($ambiente === 'prod') ? '#0f6cbf' : '#6c757d';
-        $etiqueta_ambiente = ($ambiente === 'prod')
-            ? \get_string('ambiente_prod', 'local_senceasistencia')
-            : \get_string('ambiente_test', 'local_senceasistencia');
-        $color_etiqueta = ($ambiente === 'prod') ? '#28a745' : '#ffc107';
-        $color_texto_etiqueta = ($ambiente === 'prod') ? 'white' : 'black';
 
         // ==================== HTML ====================
         $html = \html_writer::start_div('sence-bloque-curso', array(
-            'style' => 'max-width:600px;margin:180px auto -100px;padding:20px;'
+            'style' => 'max-width:600px;margin:100px auto -100px;padding:20px;'
                      . 'border:2px solid ' . $color_principal . ';'
                      . 'border-radius:8px;background:#f0f8ff;text-align:center;'
         ));
 
-        // Título
         $html .= \html_writer::tag('h3', \get_string('pluginname', 'local_senceasistencia'), array(
             'style' => 'color:' . $color_principal . ';margin-top:10px;'
         ));
 
-        // ==================== CRONÓMETRO (solo si hay sesión activa) ====================
-        if ($sesionactiva && !$tienecierre) {
+        // ==================== CRONÓMETRO ====================
+        if ($sesionactiva) {
             $tiempo_transcurrido = time() - $sesionactiva->timecreated;
             $tiempo_restante = $duracion_seg - $tiempo_transcurrido;
             if ($tiempo_restante < 0) {
                 $tiempo_restante = 0;
             }
-
-            // Si la sesión tiene duración guardada, usarla (más confiable)
             if (!empty($sesionactiva->duracion) && $sesionactiva->duracion > 0) {
                 $tiempo_restante = $sesionactiva->duracion - $tiempo_transcurrido;
                 if ($tiempo_restante < 0) {
@@ -207,7 +187,6 @@ class hook_callbacks {
 
             $html .= '</div>';
 
-            // JavaScript del cronómetro
             $html .= '<script>
             (function() {
                 var segundosRestantes = ' . (int)$tiempo_restante . ';
@@ -250,7 +229,6 @@ class hook_callbacks {
 
                     display.textContent = formatearTiempo(segundosRestantes);
 
-                    // Alerta a los 10 minutos (600 segundos)
                     if (segundosRestantes <= 600 && !alertaMostrada) {
                         alertaMostrada = true;
                         display.style.color = colorAlerta;
@@ -269,7 +247,6 @@ class hook_callbacks {
                     setTimeout(actualizar, 1000);
                 }
 
-                // Agregar animación CSS
                 var style = document.createElement("style");
                 style.textContent = "@keyframes sence-pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }";
                 document.head.appendChild(style);
@@ -285,7 +262,7 @@ class hook_callbacks {
         ));
 
         // ==================== BOTÓN INICIO ====================
-        if (!$sesionactiva || $tienecierre) {
+        if (!$sesionactiva) {
             $html .= '<form method="post" action="' . s($url_iniciar) . '" style="margin:15px 0;">';
             $html .= '<input type="hidden" name="RutOtec" value="' . s($rutotec) . '">';
             $html .= '<input type="hidden" name="Token" value="' . s($token) . '">';
@@ -305,7 +282,7 @@ class hook_callbacks {
         }
 
         // ==================== BOTÓN CIERRE ====================
-        if ($sesionactiva && !$tienecierre) {
+        if ($sesionactiva) {
             $html .= \html_writer::tag('p', \get_string('sence_session_activa', 'local_senceasistencia'), array(
                 'style' => 'color:' . $color_principal . ';font-weight:bold;font-size:14px;'
             ));
