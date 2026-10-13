@@ -28,7 +28,7 @@ Este plugin implementa la **integración por redirección** descrita en el Manua
 | MySQL / MariaDB   | 5.7 / 10.4 o superior                 |
 | Extensión cURL    | Habilitada                            |
 | HTTPS             | Obligatorio (SENCE no acepta HTTP)    |
-|-------------------|---------------------------------------|
+-------------------------------------------------------------
 
 ## Instalación
 
