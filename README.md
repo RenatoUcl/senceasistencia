@@ -20,7 +20,7 @@ Este plugin implementa la **integración por redirección** descrita en el Manua
 
 ## Requisitos
 
-|-------------------|---------------------------------------|
+-------------------------------------------------------------
 | Requisito         | Versión mínima                        |
 |-------------------|---------------------------------------|
 | Moodle            | 4.4 o superior                        |
