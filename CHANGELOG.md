@@ -5,6 +5,11 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 El formato sigue las recomendaciones de [Keep a Changelog](https://keepachangelog.com/es/1.0.0/)
 y el proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.5] - 2026-10-13
+
+### Corregido
+- El cierre de sesiones multiples no estaba guardando los datos, puesto que el nombre que se le dio "cierre_administrativo" era mas largo que lo permitido por el campo (21 caracteres)
+
 ## [1.0.4] - 2026-10-13
 
 ### Agregado

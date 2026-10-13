@@ -92,7 +92,7 @@ $sql = "SELECT i.id AS inicio_id,
           AND NOT EXISTS (
               SELECT 1 
               FROM {local_sence_asistencia} cx
-              WHERE cx.accion IN ('cierre', 'cierre_automatico', 'cierre_auto', 'cierre_administrativo')
+              WHERE cx.accion IN ('cierre', 'cierre_automatico', 'cierre_auto', 'cierre_admin')
                 AND cx.userid = i.userid
                 AND cx.courseid = i.courseid
                 AND cx.ambiente = i.ambiente
@@ -127,7 +127,7 @@ if ($action === 'cerrar' && $confirmado) {
         $record->sence_idsession       = $s->sence_idsession;
         $record->sence_idsessionalumno = $s->sence_idsessionalumno;
         $record->runalumno             = $s->runalumno;
-        $record->accion                = 'cierre_administrativo';
+        $record->accion                = 'cierre_admin';
         $record->glosaerror            = null;
         $record->ambiente              = $s->ambiente;
         $record->fechahora             = date('Y-m-d H:i:s', $ahora);

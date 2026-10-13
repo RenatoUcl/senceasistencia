@@ -72,7 +72,7 @@ if ($accion === 'cierre') {
               AND NOT EXISTS (
                   SELECT 1 
                   FROM {local_sence_asistencia} c
-                  WHERE c.accion IN ('cierre', 'cierre_automatico', 'cierre_auto', 'cierre_administrativo')
+                  WHERE c.accion IN ('cierre', 'cierre_automatico', 'cierre_auto', 'cierre_admin')
                     AND c.userid = i.userid
                     AND c.courseid = i.courseid
                     AND c.ambiente = i.ambiente
