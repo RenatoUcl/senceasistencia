@@ -39,8 +39,10 @@ Este plugin implementa la **integración por redirección** descrita en el Manua
 
 ### 2. Asignar permisos 
 
-sudo chown -R www-data:www-data /ruta/a/moodle/local/senceasistencia
-sudo chmod -R 755 /ruta/a/moodle/local/senceasistencia
+* sudo chown -R www-data:www-data /ruta/a/moodle/local/senceasistencia 
+* sudo chmod -R 755 /ruta/a/moodle/local/senceasistencia 
+
+** Nota: El metodo descrito es por consola / linea de comandos, si usa algun gestor FTP debe dar permisos por el cliente FTP.
 
 ### 3. Instalar en Moodle 
 
